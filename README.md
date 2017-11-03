@@ -7,3 +7,14 @@ Rather, the task is to develop a system that:
 3. Detect the 5 landmarks (2 eye centers, the nose tip, and 2 mouth corners) to detect the faces in those randomly taken pictures.
 5. Use pattern recognition algorithm to authenticate the user.
 6. Use deep learning approach to improve the recognition results.
+
+SCOPE AND LIMITATIONS
+
+
+TECHNOLOGIES 
+# javascript
+#PHP
+MySQL
+
+COMPATIBLE BROWSERS
+For now, it only works with Firefox and Internet explorer. The newer versions of Google Chrome require HTTPS to use the webcam.

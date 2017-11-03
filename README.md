@@ -18,7 +18,6 @@ MySQL.
 
 # COMPATIBLE BROWSERS
 For now, it only works with Firefox and Internet explorer. The newer versions of Google Chrome require HTTPS to use the webcam.According to the Offical documentation, WebcamJS. 
- # OS	         Browser	            Notes
 1. Mac OS X	    Chrome 30+	    Works — Chrome 47+ requires HTTPS
 2. Mac OS X	    Firefox 20+   	Works
 3. Mac OS X	    Safari 6+	      Requires Adobe Flash Player

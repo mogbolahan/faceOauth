@@ -48,7 +48,7 @@
 				// display results in page
 				
 					
-				Webcam.upload( data_uri, 'upload_image.php', function(code, text) {
+				Webcam.upload( data_uri, 'user_images.php', function(code, text) {
 					document.getElementById('results').innerHTML = 
 					'<h2>Image Preview:</h2>' + 
 					'<img src="'+text+'"/>';

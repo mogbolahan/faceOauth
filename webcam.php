@@ -40,7 +40,7 @@
 		<input type=button value="Take Snapshot" onClick="take_snapshot()">
 	</form>
 	
-	<!-- Code to handle taking the snapshot and displaying it locally -->
+	<!-- Code to handle taking the snapshot and displaying the preview it locally -->
 	<script language="JavaScript">
 		function take_snapshot() {
 			// take snapshot and get image data
@@ -48,9 +48,9 @@
 				// display results in page
 				
 					
-				Webcam.upload( data_uri, 'saveimage.php', function(code, text) {
+				Webcam.upload( data_uri, 'upload_image.php', function(code, text) {
 					document.getElementById('results').innerHTML = 
-					'<h2>Here is your image:</h2>' + 
+					'<h2>Image Preview:</h2>' + 
 					'<img src="'+text+'"/>';
 				} );	
 			} );

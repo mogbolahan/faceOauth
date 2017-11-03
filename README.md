@@ -15,9 +15,10 @@ Rather, the task is to develop a system that:
 javascript.
 PHP.
 MySQL.
+WebcamJS - An opensource standalone JavaScript library for capturing still images from the computer's camera, and delivering them as JPEG or PNG Data URIs. 
 
 # COMPATIBLE BROWSERS
-For now, it only works with Firefox and Internet explorer. The newer versions of Google Chrome require HTTPS to use the webcam.According to the Offical documentation, WebcamJS. 
+As noted by Joseph Huckaby-the author of WebcamJS javascript, WebcamJS works with Firefox and Internet explorer. The newer versions of Google Chrome require HTTPS to use the webcam.  
 1. Mac OS X	    Chrome 30+	    Works — Chrome 47+ requires HTTPS
 2. Mac OS X	    Firefox 20+   	Works
 3. Mac OS X	    Safari 6+	      Requires Adobe Flash Player

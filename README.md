@@ -15,7 +15,7 @@ Rather, the task is to develop a system that:
 javascript.
 PHP.
 MySQL.
-WebcamJS - An opensource standalone JavaScript library for capturing still images from the computer's camera, and delivering them as JPEG or PNG Data URIs. 
+WebcamJS (https://pixlcore.com) - An opensource standalone JavaScript library for capturing still images from the computer's camera, and delivering them as JPEG or PNG Data URIs. 
 
 # COMPATIBLE BROWSERS
 As noted by Joseph Huckaby-the author of WebcamJS javascript, WebcamJS works with Firefox and Internet explorer. The newer versions of Google Chrome require HTTPS to use the webcam.  

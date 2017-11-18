@@ -9,38 +9,93 @@ if (isset($_SESSION['userSession'])!="") {
 
 if (isset($_POST['btn-login'])) {
 	
-	$email = strip_tags($_POST['email']);
+	$student_id = strip_tags($_POST['student_id']);
 	$password = strip_tags($_POST['password']);
 	
-	$email = $DBcon->real_escape_string($email);
+	$student_id  = $DBcon->real_escape_string($student_id );
 	$password = $DBcon->real_escape_string($password);
 	
-	$query = $DBcon->query("SELECT user_id, email, password FROM users WHERE email='$email'");
+	$query = $DBcon->query("SELECT user_id, student_id, email, password FROM users WHERE student_id ='$student_id '");
 	$row=$query->fetch_array();
 	
-	$count = $query->num_rows; // if email/password are correct returns must be 1 row
+	$count = $query->num_rows; // if student_id /password is correct returns must be 1 row i.e. unique user
 	
 	if (password_verify($password, $row['password']) && $count==1) {
 		$_SESSION['userSession'] = $row['user_id'];
 		header("Location: home.php");
 	} else {
-		$msg = "<div class='alert alert-danger'>
-					<span class='glyphicon glyphicon-info-sign'></span> &nbsp; Invalid Username or Password !
-				</div>";
+		$msg = "<h4 class='alert alert-danger'>Invalid Student I.D. / Password combination !</h5>";
 	}
 	$DBcon->close();
 }
+
+
+
+if(isset($_POST['btn-signup'])) {
+	
+	$first_name = strip_tags($_POST['first_name']);
+	$last_name = strip_tags($_POST['last_name']);
+	$email = strip_tags($_POST['email']);
+	$upass = strip_tags($_POST['password']);
+	$student_id = strip_tags($_POST['student_id']);
+	
+	$first_name = $DBcon->real_escape_string($first_name);
+	$last_name = $DBcon->real_escape_string($last_name);
+	$email = $DBcon->real_escape_string($email);
+	$upass = $DBcon->real_escape_string($upass);
+	$student_id = $DBcon->real_escape_string($student_id);
+	
+	$hashed_password = password_hash($upass, PASSWORD_DEFAULT); // Works only in PHP 5.5 and latest version
+	
+	$check_student_id = $DBcon->query("SELECT student_id FROM users WHERE student_id='$student_id'");
+	$count=$check_student_id->num_rows;
+	
+	if ($count==0) {
+		
+		$query = "INSERT INTO users(first_name,last_name,student_id,email,password) VALUES('$first_name','$last_name','$student_id','$email','$hashed_password')";
+
+		if ($DBcon->query($query)) {
+			$msg = "Registered Successfully !";
+			
+			$_SESSION['userSession'] = $row['user_id'];
+			header("Location: home.php");
+		}else {
+			$msg = "<div class='alert alert-danger'>Unable to register at this time. Please try again!
+					</div>";
+		}
+		
+	} else {
+		
+		
+		$msg = "<div class='alert alert-danger'>That Student I.D. is already in registeredthe system!
+				</div>";
+			
+	}
+	
+	$DBcon->close();
+}
+
 ?>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>faceOauth | A Face Authentication System for Online Proctored Examination.</title>
+<title>faceOauth | A Face Authentication System for Online Proctored Examinations.</title>
 <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
 <link href="bootstrap/css/bootstrap-theme.min.css" rel="stylesheet" media="screen"> 
 <link rel="stylesheet" href="style.css" type="text/css" />
+	<style>
+		.flex-container {
+		  display: flex;
+		  justify-content: center;
+		}
+
+	
+	</style>
+	
 </head>
-<body style="background:#F0E5E5">
+<body style="background:#e8e8e8">
 
 <div class="container" style="text-align:center; background: #f9f9f9">
 
@@ -56,28 +111,28 @@ if (isset($_POST['btn-login'])) {
      <br>
 
 	<h2>A Face Authentication System for Online Proctored Examination.</h2>
-<div align="center" style="display:flex; padding-top:20px;">
+<div style="padding-top:20px;"  class="flex-container">
      
 	<div id="login_form" style="margin: 20px">  
        <form class="form-signin" method="post" id="login-form">
       
-        <h2 align="center" class="form-signin-heading">Log in</h2>
+        <h3 align="center" class="form-signin-heading">Log in</h3>
         
-        <?php
-		if(isset($msg)){
-			echo $msg;
-		}
-		?>
         
         <div class="form-group">
-        <input type="email" class="form-control" placeholder="Email address" name="email" required autocomplete="off" />
+        <input type="text" class="form-control" placeholder="Student I.D." name="student_id" required autocomplete="off" />
         <span id="check-e"></span>
         </div>
         
         <div class="form-group">
         <input type="password" class="form-control" placeholder="Password" name="password" required autocomplete="off" />
         </div>
-		   
+		 
+        <?php
+		if(isset($msg)){
+			echo $msg;
+		}
+		?>  
             <button type="submit" class="btn btn-default" name="btn-login" id="btn-login">Log in</button>
 			
      	<hr />
@@ -105,27 +160,35 @@ if (isset($_POST['btn-login'])) {
 	<div id="register_form" style="display: none; margin: 20px">
 		<form class="form-signin" method="post" id="register-form">
       
-			<h2 align="center" class="form-signin-heading">Register</h2>
-
-			<?php
-			if (isset($msg)) {
-				echo $msg;
-			}
-			?>
+			<h3 align="center" class="form-signin-heading">Register</h3>
 
 			<div class="form-group">
-			<input type="text" class="form-control" placeholder="Username" name="username" required  autocomplete="off" />
+				<input type="text" class="form-control" placeholder="Student I.D." name="student_id" required  autocomplete="off" />
+				<span id="check-e"></span>
+			</div>
+			
+			<div class="form-group">
+				<input type="text" class="form-control" placeholder="First name" name="first_name" required  autocomplete="off" />
+			</div>
+			
+			<div class="form-group">
+				<input type="text" class="form-control" placeholder="Last name" name="last_name" required  autocomplete="off" />
 			</div>
 
 			<div class="form-group">
-			<input type="email" class="form-control" placeholder="Email address" name="email" required  autocomplete="off" />
-			<span id="check-e"></span>
+				<input type="email" class="form-control" placeholder="Email address" name="email" required  autocomplete="off" />
 			</div>
 
 			<div class="form-group">
 			<input type="password" class="form-control" placeholder="Password" name="password" required  autocomplete="off" />
 			</div>
-
+			
+			
+			<?php
+			if (isset($msg)) {
+				echo $msg;
+			}
+			?>
 
 				<button type="submit" class="btn btn-default" name="btn-signup">Register</button>
 
@@ -137,16 +200,11 @@ if (isset($_POST['btn-login'])) {
 	</div>
 		
 		
-	<div id="admin_form"  style="margin: 20px">
+	<div id="admin_form"  style="margin: 20px;">
 		<form class="form-signin" method="post" id="register-form">
       
-        <h2 align="center" class="form-signin-heading">Admin</h2>
-        <?php
-		if (isset($msg)) {
-			echo $msg;
-		}
-		?>
-          
+        <h3 align="center" class="form-signin-heading">Admin</h3>
+       
         <div class="form-group">
         <input type="text" class="form-control" placeholder="Username: admin" name="username" required  autocomplete="off" />
         </div>

@@ -2,15 +2,13 @@
 session_start();
 include_once 'dbconnect.php';
 
-if (!isset($_SESSION['userSession'])) {
+if (!isset($_SESSION['admin'])) {
 	header("Location: index.php");
 }
 
-$query = $DBcon->query("SELECT * FROM users WHERE user_id=".$_SESSION['userSession']);
-$userRow=$query->fetch_array();
-$DBcon->close();
-
 ?>
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
@@ -45,6 +43,12 @@ $DBcon->close();
     text-align: center;
 }
 	
+table, th, td {
+    border: 1px solid black;
+    padding: 10px;
+}
+		
+		
 	</style>
 	
 	
@@ -64,67 +68,44 @@ $DBcon->close();
 			  <li><a style="color: white; text-decoration: none; float: right" href="logout.php">Logout</a></a>
           </ul>
         </div>
-     <br>
-
-<div style="padding-top:20px;"  class="flex-container">
-     
-	<div id="login_form" style="margin: 20px">  
-       
-			<div id="web_cam" style="visibility: hidden"></div>
-
-			<!-- Webcam.js JavaScript Library -->
-			<script type="text/javascript" src="webcam.js"></script>
-
-			<!-- Configuring and attaching the camera -->
-			<script language="JavaScript">
-				Webcam.set({
-					width: 600,
-					height: 460,
-					image_format: 'jpeg',
-					jpeg_quality: 90
-				});
-				Webcam.attach( '#web_cam' );
-			</script>
-
-			<!-- Script for taking takinhg snaps and saving it on the server/ database
-
-		My concens here is the choice of storage.
-		Should the images be saved locally on a directory or on a database. ....Here comes the question of staorage.
-
-		-->
-
-		<script>
-			(function($) {
-
-			   function take_snapshot() {
-						// take snapshot and get image data
-						Webcam.snap( function(data_uri) {
-							// display results in page
-
-
-							Webcam.upload( data_uri, 'upload_image.php');	
-						} );
-					}
-
-				$(document).ready(function(){
-					window.setInterval(take_snapshot, 15000); // call our function every 15 seconds
-				});
-
-			})(jQuery);
-			</script>
-
-    </div>
+	<h2>Users</h2>
+<div align="left" style="padding-top:10px;"  class="flex-container">
+  	<?php
 	
-	
-	<div id="admin_form"  style="margin: 20px;">
-		<h3 style="color: dimgrey">To see the captured images for each user, logout, then login as an <b>admin</b> </h3>
-		<h3 style="color: dimgrey">Or simply open the <b>user_images</b> folder in localhost</h3
-      
-      </form>
-    </div> 
-	
-	
-	</div>
+$query = $DBcon->query("SELECT * FROM users");	
+if ($query->num_rows > 0) {
+    echo "<table>
+			<tr>
+				<th>Student ID</th>
+				<th>First name</th>
+				<th>Last name</th>
+				<th>Last login attempt</th>
+				<th>Feedback</th>
+			</tr>";
+    // output data of each row
+    while($row = $query->fetch_array()) {
+        echo "
+			<tr>
+				<td>" . $row["student_id"]. "</td>
+				<td>" . $row["first_name"]. "</td>
+				<td>" . $row["last_name"]. "</td>
+				<td>" . $row["last_logged_in"]. "</td>
+				<td> </td>
+				<td> <a href = 'gallery.php?student_id=". $row["student_id"]."'>View<a/></td>
+			</tr>
+			
+			";
+    }
+    echo "</table>";
+} else {
+    echo "0 results";
+}
+
+
+$DBcon->close();	
+	?>
+
+</div>
 	
 		
 	<div class="footer">

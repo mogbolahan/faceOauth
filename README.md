@@ -1,4 +1,4 @@
-# faceOauth
+# CSCI_7900
 # A Face Authentication System for Online Proctored Examination. 
 This system will use webcam to detect the face of the subject, but unlike what is currently done in ProctorU, the user(the subject) WILL NOT be prompted to position his/her face squarely in a circle displayed on the screen. This approach is prone to falsification and deception because since it is a one-time authentication process, it is possible for the subject to merely position a previously taken picture (of the person being impersonated) in front of the camera, press the "snap" button and Hurray! 
 Rather, the task is to develop a system that:
@@ -15,7 +15,6 @@ Rather, the task is to develop a system that:
 javascript.
 PHP.
 MySQL.
-boostrap
 WebcamJS (https://pixlcore.com) - An opensource standalone JavaScript library for capturing still images from the computer's camera, and delivering them as JPEG or PNG Data URIs. 
 
 # COMPATIBLE BROWSERS

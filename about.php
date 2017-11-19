@@ -1,16 +1,4 @@
-<?php
-session_start();
-include_once 'dbconnect.php';
 
-if (!isset($_SESSION['userSession'])) {
-	header("Location: index.php");
-}
-
-$query = $DBcon->query("SELECT * FROM users WHERE user_id=".$_SESSION['userSession']);
-$userRow=$query->fetch_array();
-$DBcon->close();
-
-?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
@@ -61,70 +49,49 @@ $DBcon->close();
 				<li><a style="color: white; text-decoration: none" href="about.php">About</a></li>
 				<li><a style="color: white; text-decoration: none" href="how_it_works.php">How it works</a></li>
 			 <a style="float: right"  href="https://github.com/mogbolahan/faceOauth"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
-			  <li><a style="color: white; text-decoration: none; float: right" href="logout.php">Logout</a></a>
           </ul>
         </div>
-     <br>
+	<h2>A Face Authentication System for Online Proctored Examination.</h2>
+<div style="padding-top:10px;">
+<p style="text-align: left">
+faceOauth is a "work-a-progress" Authentication System for Online Proctored Examination. 
+This system uses webcam to detect the face of the subject, but unlike what is currently done in ProctorU, the user(the subject) WILL NOT be prompted to position his/her face squarely in a circle displayed on the screen. This approach is prone to falsification and deception because since it is a one-time authentication process, it is possible for the subject to merely position a previously taken picture (of the person being impersonated) in front of the camera, press the "snap" button and Hurray! 
+</p>
+<p style="text-align: left">Rather, the task is to develop a system that:<br>
+1. WILL NOT prompt the user to position his/her face in the circle/oval.<br>
+2. Will take random pictures (not just the face) of the subject in front of the screen, at random intervals.<br>
+3. Detect the 5 landmarks (2 eye centers, the nose tip, and 2 mouth corners) to detect the faces in those randomly taken pictures.<br>
+5. Use pattern recognition algorithm to authenticate the user.<br>
+6. Use deep learning approach to improve the recognition results.<br>
+</p>
+# SCOPE AND LIMITATIONS
+....
+<p style="text-align: left">
+TECHNOLOGIES <br>
+1. python<br>
+2. javascript.<br>
+3. PHP.<br>
+4. MySQL.<br>
+5. boostrap<br>
+6. WebcamJS (https://pixlcore.com) - An opensource standalone JavaScript library for capturing still images from the computer's camera, and delivering them as JPEG or PNG Data URIs. 
+</p>
 
-<div style="padding-top:20px;"  class="flex-container">
-     
-	<div id="login_form" style="margin: 20px">  
-       
-			<div id="web_cam" style="visibility: hidden"></div>
-
-			<!-- Webcam.js JavaScript Library -->
-			<script type="text/javascript" src="webcam.js"></script>
-
-			<!-- Configuring and attaching the camera -->
-			<script language="JavaScript">
-				Webcam.set({
-					width: 600,
-					height: 460,
-					image_format: 'jpeg',
-					jpeg_quality: 90
-				});
-				Webcam.attach( '#web_cam' );
-			</script>
-
-			<!-- Script for taking takinhg snaps and saving it on the server/ database
-
-		My concens here is the choice of storage.
-		Should the images be saved locally on a directory or on a database. ....Here comes the question of staorage.
-
-		-->
-
-		<script>
-			(function($) {
-
-			   function take_snapshot() {
-						// take snapshot and get image data
-						Webcam.snap( function(data_uri) {
-							// display results in page
-
-
-							Webcam.upload( data_uri, 'upload_image.php');	
-						} );
-					}
-
-				$(document).ready(function(){
-					window.setInterval(take_snapshot, 15000); // call our function every 15 seconds
-				});
-
-			})(jQuery);
-			</script>
-
-    </div>
+<p style="text-align: left">
 	
+COMPATIBLE BROWSERS<br>
+As noted by Joseph Huckaby-the author of WebcamJS javascript, WebcamJS works with Firefox and Internet explorer. The newer versions of Google Chrome require HTTPS to use the webcam. <br> 
+1. Mac OS X	    Chrome 30+	    Works — Chrome 47+ requires HTTPS<br>
+2. Mac OS X	    Firefox 20+   	Works<br>
+3. Mac OS X	    Safari 6+	      Requires Adobe Flash Player<br>
+4. Windows	      Chrome 30+	    Works — Chrome 47+ requires HTTPS<br>
+5. Windows	      Firefox 20+	    Works<br>
+6. Windows	      IE 9	          Requires Adobe Flash Player<br>
+7. Windows	      IE 10	          Requires Adobe Flash Player<br>
+9. Windows	      IE 11	          Requires Adobe Flash Player<br>
+
+</p>
 	
-	<div id="admin_form"  style="margin: 20px;">
-		<h3 style="color: dimgrey">To see the captured images for each user, logout, then login as an <b>admin</b> </h3>
-		<h3 style="color: dimgrey">Or simply open the <b>user_images</b> folder in localhost</h3
-      
-      </form>
-    </div> 
-	
-	
-	</div>
+</div>
 	
 		
 	<div class="footer">

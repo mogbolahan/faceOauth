@@ -2,15 +2,13 @@
 session_start();
 include_once 'dbconnect.php';
 
-if (!isset($_SESSION['userSession'])) {
+if (!isset($_SESSION['admin'])) {
 	header("Location: index.php");
 }
 
-$query = $DBcon->query("SELECT * FROM users WHERE user_id=".$_SESSION['userSession']);
-$userRow=$query->fetch_array();
-$DBcon->close();
-
 ?>
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
@@ -33,6 +31,13 @@ $DBcon->close();
     -ms-overflow-style: none;
 		}
 		
+			
+
+.responsive-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+	
 		
 		
 		.footer {
@@ -45,6 +50,12 @@ $DBcon->close();
     text-align: center;
 }
 	
+table, th, td {
+    border: 1px solid black;
+    padding: 10px;
+}
+		
+		
 	</style>
 	
 	
@@ -64,67 +75,51 @@ $DBcon->close();
 			  <li><a style="color: white; text-decoration: none; float: right" href="logout.php">Logout</a></a>
           </ul>
         </div>
-     <br>
+	<?php
+	$student_id = $_GET['student_id'];
+	
+	$query = $DBcon->query("SELECT * FROM users WHERE student_id='$student_id' ");	
+	if ($query->num_rows > 0) {
+		$row = $query->fetch_array();
+	}
+	echo '<h3>'.$row["first_name"].'&nbsp;&nbsp;&nbsp;'.$row["last_name"].'&nbsp;&nbsp;&nbsp;Student I.D:'.$row["student_id"].'</h3>';
+	?>
+	
+<div style="padding-top:10px; align-content: center"  class="responsive-container">
+<?php
+	$student_id = $_GET['student_id'];
+	
+	$query = $DBcon->query("SELECT * FROM users WHERE student_id='$student_id' ");	
+	if ($query->num_rows > 0) {
+		$row = $query->fetch_array();
+	}
+$directory = $row["unique_directory"];
 
-<div style="padding-top:20px;"  class="flex-container">
-     
-	<div id="login_form" style="margin: 20px">  
-       
-			<div id="web_cam" style="visibility: hidden"></div>
-
-			<!-- Webcam.js JavaScript Library -->
-			<script type="text/javascript" src="webcam.js"></script>
-
-			<!-- Configuring and attaching the camera -->
-			<script language="JavaScript">
-				Webcam.set({
-					width: 600,
-					height: 460,
-					image_format: 'jpeg',
-					jpeg_quality: 90
-				});
-				Webcam.attach( '#web_cam' );
-			</script>
-
-			<!-- Script for taking takinhg snaps and saving it on the server/ database
-
-		My concens here is the choice of storage.
-		Should the images be saved locally on a directory or on a database. ....Here comes the question of staorage.
-
-		-->
-
-		<script>
-			(function($) {
-
-			   function take_snapshot() {
-						// take snapshot and get image data
-						Webcam.snap( function(data_uri) {
-							// display results in page
-
-
-							Webcam.upload( data_uri, 'upload_image.php');	
-						} );
-					}
-
-				$(document).ready(function(){
-					window.setInterval(take_snapshot, 15000); // call our function every 15 seconds
-				});
-
-			})(jQuery);
-			</script>
-
-    </div>
+    $files = glob("$directory*.*");
+    for ($i=0; $i<count($files); $i++)
+     {
+       $image = $files[$i];
+       $supported_file = array(
+               'gif',
+               'jpg',
+               'jpeg',
+               'png'
+        );
+ 
+        $ext = strtolower(pathinfo($image, PATHINFO_EXTENSION));
+        if (in_array($ext, $supported_file)) {
+            echo '<img src="'.$image .'" alt="user image" style ="height: 200px; width: 200px; margin: 10px" />';
+           //echo basename($image)."<br />"; // show only image name if you want to show full path then use this code // echo $image."<br />";
+           } else {
+               continue;
+           }
+         }
 	
 	
-	<div id="admin_form"  style="margin: 20px;">
-		<h3 style="color: dimgrey">To see the captured images for each user, logout, then login as an <b>admin</b> </h3>
-		<h3 style="color: dimgrey">Or simply open the <b>user_images</b> folder in localhost</h3
-      
-      </form>
-    </div> 
+	$DBcon->close();
+      ?>
 	
-	
-	</div>
+</div>
 	
 		
 	<div class="footer">

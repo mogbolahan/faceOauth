@@ -7,11 +7,20 @@ if (isset($_SESSION['userSession'])!="") {
 	exit;
 }
 
+if (isset($_SESSION['admin'])!="") {
+	header("Location: adminpage.php");
+	exit;
+}
+
+
+
 if (isset($_POST['btn-login'])) {
+	
+	$last_logged_in = date('y/m/d h:i:s a', time());
 	
 	$student_id = strip_tags($_POST['student_id']);
 	$password = strip_tags($_POST['password']);
-	
+	+
 	$student_id  = $DBcon->real_escape_string($student_id );
 	$password = $DBcon->real_escape_string($password);
 	
@@ -22,9 +31,13 @@ if (isset($_POST['btn-login'])) {
 	
 	if (password_verify($password, $row['password']) && $count==1) {
 		$_SESSION['userSession'] = $row['user_id'];
+		
+		//Update last_logged_in value.
+		$query = $DBcon->query("UPDATE users SET last_logged_in = '$last_logged_in' WHERE student_id='$student_id'");
+		
 		header("Location: home.php");
 	} else {
-		$msg = "<h4 class='alert alert-danger'>Invalid Student I.D. / Password combination !</h5>";
+		$msg = "<h5 class='alert alert-danger'>Invalid Student I.D. / Password combination !</h5>";
 	}
 	$DBcon->close();
 }
@@ -32,6 +45,8 @@ if (isset($_POST['btn-login'])) {
 
 
 if(isset($_POST['btn-signup'])) {
+	
+	$last_logged_in = date('y/m/d h:i:s a', time());
 	
 	$first_name = strip_tags($_POST['first_name']);
 	$last_name = strip_tags($_POST['last_name']);
@@ -51,8 +66,7 @@ if(isset($_POST['btn-signup'])) {
 	$count=$check_student_id->num_rows;
 	
 	if ($count==0) {
-		
-		$query = "INSERT INTO users(first_name,last_name,student_id,email,password) VALUES('$first_name','$last_name','$student_id','$email','$hashed_password')";
+		$query = "INSERT INTO users(first_name,last_name,student_id,email,password,last_logged_in) VALUES('$first_name','$last_name','$student_id','$email','$hashed_password','$last_logged_in')";
 
 		if ($DBcon->query($query)) {
 			$msg = "Registered Successfully !";
@@ -60,22 +74,53 @@ if(isset($_POST['btn-signup'])) {
 			$_SESSION['userSession'] = $row['user_id'];
 			header("Location: home.php");
 		}else {
-			$msg = "<div class='alert alert-danger'>Unable to register at this time. Please try again!
-					</div>";
+			$msg = "<h5 class='alert alert-danger'>Unable to register at this time. Please try again!
+					</h5>";
 		}
 		
 	} else {
 		
 		
-		$msg = "<div class='alert alert-danger'>That Student I.D. is already in registeredthe system!
-				</div>";
+		$msg = "<h5 class='alert alert-danger'>That Student I.D. is already in registeredthe system!
+				</h5>";
 			
 	}
 	
 	$DBcon->close();
 }
 
+
+
+
+if (isset($_POST['btn-admin'])) {
+	
+	$admin_name = strip_tags($_POST['admin_name']);
+	$admin_password  = strip_tags($_POST['admin_password']);
+	
+	$admin_name  = $DBcon->real_escape_string($admin_name );
+	$admin_password  = $DBcon->real_escape_string($admin_password);
+	
+	
+	$query = $DBcon->query("SELECT * FROM admin WHERE username='$admin_name' and password='$admin_password'");
+	$row=$query->fetch_array();
+	
+	$count = $query->num_rows; 
+	
+	if ($count==1) {
+		
+		$_SESSION['admin']=$admin_name;
+		header("Location: adminpage.php");
+		
+	} else {
+		$msg_admin = "<h5 class='alert alert-danger'>Invalid Username / Password combination !</h5>";
+	}
+	$DBcon->close();
+}
+
+
 ?>
+
+
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -89,8 +134,27 @@ if(isset($_POST['btn-signup'])) {
 		.flex-container {
 		  display: flex;
 		  justify-content: center;
+    overflow: auto;
+    height: 100vh;
+    height: calc(100vh - 100px);
+    position: relative;
+    backface-visibility: hidden;
+    will-change: overflow;
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: none;
 		}
-
+		
+		
+		
+		.footer {
+	left: 0;
+    bottom: 0;
+    width: 100%;
+	padding: 10px;
+    background-color: #3B3A45;
+    color: white;
+    text-align: center;
+}
 	
 	</style>
 	
@@ -103,15 +167,15 @@ if(isset($_POST['btn-signup'])) {
 			
 		<a href="index.php" style="font-size: 30px; color: white; text-decoration: none; float: left; margin-left: 10px">face<span style="color: #5023B0">Oauth</span></a>
           <ul class="nav navbar-nav">
-				<li><a style="color: white; text-decoration: none" href="#">About</a></li>
-				<li><a style="color: white; text-decoration: none" href="#">How it works</a></li>
+				<li><a style="color: white; text-decoration: none" href="about.php">About</a></li>
+				<li><a style="color: white; text-decoration: none" href="how_it_works.php">How it works</a></li>
 			 <a style="float: right"  href="https://github.com/mogbolahan/faceOauth"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
           </ul>
         </div>
      <br>
 
 	<h2>A Face Authentication System for Online Proctored Examination.</h2>
-<div style="padding-top:20px;"  class="flex-container">
+<div style="padding-top:10px;"  class="flex-container">
      
 	<div id="login_form" style="margin: 20px">  
        <form class="form-signin" method="post" id="login-form">
@@ -206,23 +270,34 @@ if(isset($_POST['btn-signup'])) {
         <h3 align="center" class="form-signin-heading">Admin</h3>
        
         <div class="form-group">
-        <input type="text" class="form-control" placeholder="Username: admin" name="username" required  autocomplete="off" />
+        <input type="text" class="form-control" placeholder="Username: admin" name="admin_name" required  autocomplete="off" />
         </div>
         
                 
         <div class="form-group">
-        <input type="password" class="form-control" placeholder="Password: admin" name="password" required autocomplete="off"  />
+        <input type="password" class="form-control" placeholder="Password: admin" name="admin_password" required autocomplete="off"  />
         </div>
         
+			<?php
+			if (isset($msg_admin)) {
+				echo $msg_admin;
+			}
+			?>
      	<hr />
-            <button type="submit" class="btn btn-default" name="btn-signup">Log in</button> 
+            <button type="submit" class="btn btn-default" name="btn-admin">Log in</button> 
       
       </form>
     </div> 
 	
 	
-	</div>
+</div>	
+<div class="footer">
+  <p>Dr. Linqiang Ge &nbsp;&nbsp;&nbsp;&nbsp;  | &nbsp;&nbsp;&nbsp;&nbsp;  Mogbolahan Ojeyinka </p>
+  <p>Department of Computer Science &nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp; Georgia Southwestern State University</p>
 </div>
+	
+</div>
+
 
 </body>
 </html>

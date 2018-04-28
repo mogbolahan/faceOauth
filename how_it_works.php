@@ -44,7 +44,7 @@
 
 		<div class="navbar" style="background: #120D3B;">
 			
-		<a href="get_started.php" style="font-size: 30px; color: white; text-decoration: none; float: left; margin-left: 10px">face<span style="color: #5023B0">Oauth</span></a>
+		<a href="get_started_with_username_and_pword.php" style="font-size: 30px; color: white; text-decoration: none; float: left; margin-left: 10px">face<span style="color: #5023B0">Oauth</span></a>
           <ul class="nav navbar-nav">
 				<li><a style="color: white; text-decoration: none" href="about.php">About</a></li>
 				<li><a style="color: white; text-decoration: none" href="how_it_works.php">How it works</a></li>

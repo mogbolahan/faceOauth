@@ -2,27 +2,28 @@
 session_start();
 include_once 'dbconnect.php';
 
+include_once 'FaceOauth.php';
+
 if (!isset($_SESSION['userSession_intermediate'])) {
 	header("Location: index.php");
 }
 
+	$query = $DBcon->query("SELECT * FROM users WHERE user_id=".$_SESSION['userSession_intermediate']);
+	$userRow=$query->fetch_array();
 
-$query = $DBcon->query("SELECT * FROM users WHERE user_id=".$_SESSION['userSession_intermediate']);
-$userRow=$query->fetch_array();
+	$userRow['user_id'];
 
-$userRow['user_id'];
-
-				include('phash.php');
-				$phasher = new Phash;
+	$Average_trained_hash = $userRow['Average_trianed_hash']; // Average hash in hex
 
 ?>
+
 	
 					<!--  Module for Capturing untrained images during login  -->
 			<?php
 					
 						// Module for Capturing images during login 
 					/* 
-					Now we are creating a unique directory to store the new student's pictures at run time'
+					Now I am creating a unique directory to store the new student's pictures at run time'
 					The 'mode' is 0777 by default, which means the widest possible access. For more information on modes, read the details on http://php.net/manual/en/function.chmod.php.
 					Note:	mode is ignored on Windows. For reasons I am yet to figure out, 0755 is what works  for me here
 			*/
@@ -36,9 +37,6 @@ $userRow['user_id'];
 						//Directory does not exist, so let us create it.
 						mkdir($unique_untrained_folder, 0755);
 					}
-
-
-
 
 
 
@@ -60,9 +58,9 @@ $userRow['user_id'];
 					$filename = $temp_filename. '.jpg';
 					move_uploaded_file($_FILES['webcam']['tmp_name'], $unique_untrained_folder.$filename);
 
-/*
+
 					//------------------------ Cropping and training the images -------------------
-							sleep(2);
+						//	sleep(1);
 							// Original image
 							$filename = $unique_untrained_folder.$filename;
 
@@ -71,86 +69,62 @@ $userRow['user_id'];
 
 							// The x and y coordinates on the original image where we
 							// will begin cropping the image
-							$left = 80;
-							$top = 50;
+							$left = 82;
+							$top = 40;
 
 							// This will be the final size of the image (e.g. how many pixels
 							// left and down we will be going)
 							$crop_width = 80;
-							$crop_height = 85;
+							$crop_height = 80;
 
 							// Resample the image
 							$canvas = imagecreatetruecolor($crop_width, $crop_height);
 							$current_image = imagecreatefromjpeg($filename);
 							imagecopy($canvas, $current_image, 0, 0, $left, $top, $current_width, $current_height);
-							imagejpeg($canvas, $filename, 100);
+							imagejpeg($canvas, $filename, 80);
 					//-------------------------------------------------
-*/
 
-
+	
 
 
 
 				//	echo $unique_folder.$filename;
-					
-					// GETTING THE SUM OF FACE SIGNATURE OF THE UNTRAINED IMAGES. NEED LATER TO COMPUTE THE AVERAGE
-			
-					$temp_filename = $userRow['student_id'];
-					//check if filename already exists. If fileneme exists add an integer i for uniqueness
-					$j = 0; 
-					$sum_untrained = 0;
 		
-					while(file_exists($unique_untrained_folder.$temp_filename. '.jpg') != 0) {
-						$phash4 = $phasher->getHash('user_images/'.$userRow['student_id'].'/untrained/'.$temp_filename.'.jpg', false);
-						$image_hash = $phasher->hashAsString($phash4, false).PHP_EOL; // Image Hash in binary
-						$image_hash = bindec($image_hash); // Image Hash in decimal
-						$sum_untrained = $sum_untrained + $image_hash; // Sum of Image Hashes in decimal
-						$j++; //Add 1 to i
-						$temp_filename = strstr( $temp_filename, "_", true );
-						$temp_filename = $userRow['student_id']. "_" . $j;
-						file_exists($unique_untrained_folder.$temp_filename. '.jpg');
-					}
-
-
-
-
 				?>
 
 
-					<!-- MODULE FOR GETTING THE AVERAGE FACE SIGNATURE OF THE TRAINED IMAGES -->
-			<?php
-				// MODULE FOR GETTING THE AVERAGE FACE SIGNATURE OF THE TRAINED IMAGES STARTS HERE 
-					//The name of the directory that we need to create.
-					$unique_folder = 'user_images/'.$userRow['student_id']. '/';
-					$temp_filename = $userRow['student_id'];
-					//check if filename already exists. If fileneme exists add an integer i for uniqueness
-					$j = 0; 
-					$sum_trianed = 0;
-					while(file_exists($unique_folder.$temp_filename. '.jpg') != 0) {
-						$phash4 = $phasher->getHash('user_images/'.$userRow['student_id'].'/'.$temp_filename.'.jpg', false);
-						$image_hash = $phasher->hashAsString($phash4, false).PHP_EOL; // Image Hash in binary
-						$image_hash = bindec($image_hash); // Image Hash in decimal
-						$sum_trianed = $sum_trianed + $image_hash; // Sum of Image Hashes in decimal
-						$j++; //Add 1 to i
-						$temp_filename = strstr( $temp_filename, "_", true );
-						$temp_filename = $userRow['student_id']. "_" . $j;
-						file_exists($unique_folder.$temp_filename. '.jpg');
-					}
+
+<?php 
+
+$FaceOauth = new FaceOauth();
+
+//Login
+$login_error='';
+if(isset($_POST['btn-verify']))
+{
+			$user_id = $_SESSION['userSession_intermediate'];
+			
+	
+			$verified_face=$FaceOauth->VerifyFace($Average_trained_hash,$user_id);
+
+		if($verified_face)
+		{
+			$_SESSION['userSession']=$verified_face;
+
+			header("Location:home.php");
+		}
+		else
+				{
+					$msg= "<br>
+					       <span class='error'>Your face identity <span style='color: red'> DOES NOT </span>match the student information you provided.
+
+							<h4><span style='color: blue'> Please try again or contact the system administrator </span></h4>
+							<span>";
+				}	
+}
 
 
-						$n_trianed = count(scandir($unique_folder)) - 2; // Counts the number of files (in this case, images) in a folder or directory. Note: I subtracted “3” from the gross-count to get the final net-count because PHP include (.) and (..) among the file and directory returned by scandir().
-
-						$Average_trianed_hash = $sum_trianed/$n_trianed; // Average hash in decimal
-						$Average_trianed_hash = dechex($Average_trianed_hash); // Average hash in binary
-
-
-					//	$BIT_COUNT_Signature_average_untrained =  $phasher->hashAsString($phash2, false).PHP_EOL;
-					//	$HAMMING_signature_average_untrained  = $phasher->hashAsString($phash2).PHP_EOL;
-					
-			?>
-
-
-
+?>
 
 
 
@@ -193,23 +167,73 @@ $userRow['user_id'];
 			text-align: center;
 		}
 	
-		#results { margin:20px; padding:20px; border:1px solid; background:#ccc; }
+		
+		
+	#loading-div-background{
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #fff;
+    width: 100%;
+    height: 100%;
+}
+
+#loading-div{
+    width: 300px;
+    height: 150px;
+    background-color: #fff;
+    border: 5px solid #1468b3;
+    text-align: center;
+    color: #202020;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -150px;
+    margin-top: -100px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    behavior: url("/css/pie/PIE.htc"); /* HANDLES IE */
+}
+		
+		
 	
 	</style>
+	
+	
+	
+	<script type="text/javascript">
+    $(document).ready(function (){
+        $("#loading-div-background").css({ opacity: 1.0 });
+    });
+
+    function ShowProgressAnimation(){
+	//	var student_id = $("#student_id").val();
+	//	$.post("login_verify_face.php", { student_id: student_id});  loading-div-background
+        $("#loading-div-background").show();
+    }
+		
+		
+	function SubmitFormData() {
+		var student_id = $("#student_id").val();
+		$.post("login_verify_face.php", { student_id: student_id},
+		);
+	}
+</script>
 	
 	
 	<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script> <!--Required for the automatic snapping to work -->
 	
 	
 </head>
-<body style="background:#e8e8e8" onLoad="<?php if (isset($_SESSION['userSession_intermediate'])) { echo
-	  			"$('#myModal').modal('show');";}?>">
+<body style="background:#e8e8e8">
 
 <div class="container" style="text-align:center; background: #f9f9f9">
 
 		<div class="navbar" style="background: #120D3B;">
 			
-		<a href="get_started.php" style="font-size: 30px; color: white; text-decoration: none; float: left; margin-left: 10px">face<span style="color: #5023B0">Oauth</span></a>
+		<a href="get_started_with_username_and_pword.php" style="font-size: 30px; color: white; text-decoration: none; float: left; margin-left: 10px">face<span style="color: #5023B0">Oauth</span></a>
           <ul class="nav navbar-nav">
 				<li><a style="color: white; text-decoration: none" href="about.php">About</a></li>
 				<li><a style="color: white; text-decoration: none" href="how_it_works.php">How it works</a></li>
@@ -217,17 +241,15 @@ $userRow['user_id'];
 			 <a style="float: right"  href="https://github.com/mogbolahan/faceOauth"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
           </ul>
         </div>
-	
-	<h2>Final Step</h2>
 
 	
-<div style=" padding: 20px; background: #f9f9f9; background: transparent url(images/bg_2.jpg) center no-repeat;" align="center">
-     
+<div style=" padding: 20px; background: #f9f9f9; background: transparent url(../images/1.jpg) center no-repeat;background-size: cover;" align="center">
 	
+	<h2 style="color: white">Final Step</h2>
 	
 	<div id="login_form" style="padding: 20px; width: 40%; background: white; border-radius: 5px">
 				<!-- Big picture frame -->
-				<div align="center" id="login_form" style="margin: 20px;">  
+				<div align="center" id="login_form" style="margin-top: 20px;">  
 
 					<div id="web_cam"></div>
 
@@ -302,122 +324,33 @@ $userRow['user_id'];
 
 				</script>
 
+				   <form method="post" action="">
+
+						<h4 align="center" class="form-signin-heading">Matching record found for student I.D:<span style="color: red"> <?php echo $userRow['student_id'] ?> </span></h4>
+						   <br>
+						<h4 align="center" class="form-signin-heading">Click on the <span style="color: red">"VERIFY"</span> button to verify your <span style="color: red">face idientity</span></h4>
+
+						<hr/>
+
+						   <a href="logout.php"><button type="button" class="btn btn-default">Cancel</button></a>
+
+						   <input value="<?php echo $userRow['student_id'] ?>" style="display: none" name="student_id" id="student_id" type="text"/>
+					   
+								<!-- Button trigger modal -->
+						<button type="submit" class="btn btn-primary" id="btn-verify" name="btn-verify">Verify</button>
+					   
+							<?php
+							if(isset($msg)){
+								echo $msg;
+							}
+							?>  
+					</form>
 
 
-			</div>  
-       <form method="post" id="login-form">
-      
-        <h4 align="center" class="form-signin-heading">Matching record found for student I.D:<span style="color: red"> <?php echo $userRow['student_id'] ?> </span></h4>
-		   <br>
-		<h2 align="center" class="form-signin-heading">Click on the <span style="color: red">"VERIFY"</span> button to verify your <span style="color: red">face idientity</span></h2>
-        
-     	<hr/>
-			
-		   <a href="logout.php"><button type="button" class="btn btn-default">Cancel</button></a>
-		   
-		   		<!-- Button trigger modal -->
-			<button type="button" class="btn btn-primary" name="btn-verify" id="btn-verify" data-toggle="modal" data-target="
-		<?php 
-			$n_untrained = count(scandir($unique_untrained_folder)) - 2; // Counts the number of files (in this case, images) in a folder or directory. Note: I subtracted “3” from the gross-count to get the final net-count because PHP include (.) and (..) among the file and directory returned by scandir().
 
-			$Average_untrained_hash = $sum_untrained/$n_untrained; // Average hash in decimal
-			$Average_untrained_hash = dechex($Average_untrained_hash); // Average hash in binary
+			</div> 
 
-
-								//	$BIT_COUNT_Signature_average_untrained =  $phasher->hashAsString($phash2, false).PHP_EOL;
-								//	$HAMMING_signature_average_untrained  = $phasher->hashAsString($phash2).PHP_EOL;
-
-							// ******************************************* COMPARISON *****************************************
-			$BIT_COUNT_METHOD = $phasher->getSimilarity($Average_trianed_hash, $Average_untrained_hash, 'BITS');
-			$HAMMING_METHOD = $phasher->getSimilarity($Average_trianed_hash, $Average_untrained_hash);
-
-			if($HAMMING_METHOD >= 25)
-				{	
-					$_SESSION['userSession'] = $_SESSION['userSession_intermediate'];
-					$student_id = $_SESSION['userSession'];
-					echo '#matchingRecordModal';
-				}
-			else
-				{
-					echo '#noMatchingRecordModal';	
-				}
-	?>
-				 " data-backdrop="static" data-keyboard="false">Verify</button>
-			
-		<!--Matching record found Modal -->
-		<div class="modal fade" id="matchingRecordModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-			<div class="modal-dialog modal-content" role="document">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<h4 class="modal-title" id="myModalLabel">Matching record found</h4>
-				</div>
-				<div class="modal-body">
-				Based on our record, here are your details:
-				<h5>First name   :<span style="color: blue"> <?php echo $userRow['first_name'] ?> </span></h5>
-				<h5>Last name    :<span style="color: blue"> <?php echo $userRow['last_name'] ?> </span></h5>
-				<h5>Student ID   :<span style="color: blue"> <?php echo $userRow['student_id'] ?> </span></h5>  
-				<h5>Email Address:<span style="color: blue"> <?php echo $userRow['email'] ?> </span></h5>
-			
-			
-				
-								 <!-- Average hash in Hexadecimal -->
-				Average untrained hash =  &nbsp;<?php echo $Average_untrained_hash;?>
-				<br>
-				Average trianed hash =  &nbsp;<?php echo $Average_trianed_hash;?>
-		<div>
-							<br><br>
-					Comparison with Average Trained Hash
-							<br>
-			Using BIT COUNT METHOD &nbsp;<?php echo $BIT_COUNT_METHOD;?>
-			<br>
-			Using HAMMING METHOD &nbsp;<?php echo $HAMMING_METHOD; ?>
-		</div>
-					
-				</div>
-					<div class="modal-footer">
-						<a href="logout.php"><button type="button" class="btn btn-primary">Cancel</button></a>
-						<a href="home.php"><button type="button" class="btn btn-default">Continue</button></a>
-					</div>
-			</div>
-		</div>
-		   
-		 <!--No Matching record found Modal -->
-		<div class="modal fade" id="noMatchingRecordModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-			<div class="modal-dialog modal-content" role="document">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<h4 class="modal-title" id="myModalLabel"><span style="color: red">Oops! No Matching record found</span></h4>
-				</div>
-				<div class="modal-body">
-				Your face identity <span style="color: red"> DOES NOT </span>match the student information you provided.
-				
-				<h4><span style="color: blue"> Please try again or contact the system administrator </span></h4>
-					
-					
-											 <!-- Average hash in Hexadecimal -->
-							Average untrained hash =  &nbsp;<?php echo $Average_untrained_hash;?>
-							<br>
-							Average trianed hash =  &nbsp;<?php echo $Average_trianed_hash;?>
-					<div>
-										<br><br>
-								Comparison with Average Trained Hash
-										<br>
-						Using BIT COUNT METHOD &nbsp;<?php echo $BIT_COUNT_METHOD;?>
-						<br>
-						Using HAMMING METHOD &nbsp;<?php echo $HAMMING_METHOD; ?>
-					</div>
-					
-				</div>
-					<div class="modal-footer">
-						<a href="logout.php"><button type="button" class="btn btn-primary">Try again</button></a>
-						
-						
-					</div>
-			</div>
-		</div>  
-		 
-		</form>
-
+		
     </div>
 	
 </div>

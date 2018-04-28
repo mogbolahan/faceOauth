@@ -1,13 +1,89 @@
+
+<!-- Code block for geolocation -->
+<?php
+function ip_info($ip = NULL, $purpose = "location", $deep_detect = TRUE) {
+    $output = NULL;
+    if (filter_var($ip, FILTER_VALIDATE_IP) === FALSE) {
+        $ip = $_SERVER["REMOTE_ADDR"];
+        if ($deep_detect) {
+            if (filter_var(@$_SERVER['HTTP_X_FORWARDED_FOR'], FILTER_VALIDATE_IP))
+                $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            if (filter_var(@$_SERVER['HTTP_CLIENT_IP'], FILTER_VALIDATE_IP))
+                $ip = $_SERVER['HTTP_CLIENT_IP'];
+        }
+    }
+    $purpose    = str_replace(array("name", "\n", "\t", " ", "-", "_"), NULL, strtolower(trim($purpose)));
+    $support    = array("country", "countrycode", "state", "region", "city", "location", "address");
+    $continents = array(
+        "AF" => "Africa",
+        "AN" => "Antarctica",
+        "AS" => "Asia",
+        "EU" => "Europe",
+        "OC" => "Australia (Oceania)",
+        "NA" => "North America",
+        "SA" => "South America"
+    );
+    if (filter_var($ip, FILTER_VALIDATE_IP) && in_array($purpose, $support)) {
+        $ipdat = @json_decode(file_get_contents("http://www.geoplugin.net/json.gp?ip=" . $ip));
+        if (@strlen(trim($ipdat->geoplugin_countryCode)) == 2) {
+            switch ($purpose) {
+                case "location":
+                    $output = array(
+                        "city"           => @$ipdat->geoplugin_city,
+                        "state"          => @$ipdat->geoplugin_regionName,
+                        "country"        => @$ipdat->geoplugin_countryName,
+                        "country_code"   => @$ipdat->geoplugin_countryCode,
+                        "continent"      => @$continents[strtoupper($ipdat->geoplugin_continentCode)],
+                        "continent_code" => @$ipdat->geoplugin_continentCode
+                    );
+                    break;
+                case "address":
+                    $address = array($ipdat->geoplugin_countryName);
+                    if (@strlen($ipdat->geoplugin_regionName) >= 1)
+                        $address[] = $ipdat->geoplugin_regionName;
+                    if (@strlen($ipdat->geoplugin_city) >= 1)
+                        $address[] = $ipdat->geoplugin_city;
+                    $output = implode(", ", array_reverse($address));
+                    break;
+                case "city":
+                    $output = @$ipdat->geoplugin_city;
+                    break;
+                case "state":
+                    $output = @$ipdat->geoplugin_regionName;
+                    break;
+                case "region":
+                    $output = @$ipdat->geoplugin_regionName;
+                    break;
+                case "country":
+                    $output = @$ipdat->geoplugin_countryName;
+                    break;
+                case "countrycode":
+                    $output = @$ipdat->geoplugin_countryCode;
+                    break;
+            }
+        }
+    }
+    return $output;
+}
+
+$Location = ip_info("Visitor", "City");
+?>
+
+
 <?php
 session_start();
 include_once 'dbconnect.php';
 
-if (!isset($_SESSION['userSession_intermediate'])) {
+if (!isset($_SESSION['userSession'])) {
 	header("Location: index.php");
 }
 
-$query = $DBcon->query("SELECT * FROM users WHERE user_id=".$_SESSION['userSession_intermediate']);
+$query = $DBcon->query("SELECT * FROM users WHERE user_id=".$_SESSION['userSession']);
 $userRow=$query->fetch_array();
+
+$_SESSION['signature'] = $userRow['Average_trianed_hash']; // Average hash in hex
+$signature = $_SESSION['signature']; // Average hash in hex
+
 $DBcon->close();
 
 ?>
@@ -122,7 +198,7 @@ $face_detect->toJpeg(); //Returns the entire image but draws a rectangle around 
 
 		<div class="navbar" style="background: #120D3B;">
 			
-		<a href="get_started.php" style="font-size: 30px; color: white; text-decoration: none; float: left; margin-left: 10px">face<span style="color: #5023B0">Oauth</span></a>
+		<a href="get_started_with_username_and_pword.php" style="font-size: 30px; color: white; text-decoration: none; float: left; margin-left: 10px">face<span style="color: #5023B0">Oauth</span></a>
           <ul class="nav navbar-nav">
 				<li><a style="color: white; text-decoration: none" href="about.php">About</a></li>
 				<li><a style="color: white; text-decoration: none" href="how_it_works.php">How it works</a></li>
@@ -140,14 +216,24 @@ $face_detect->toJpeg(); //Returns the entire image but draws a rectangle around 
     </div>
 	
 	
-	<div id="admin_form"  style="margin: 20px;">
-		<h3 style="color: dimgrey">To see the captured images for each user, logout, then login as an <b>admin</b> </h3>
-      
+	<div align="left" style="margin: 20px; background: white; border-radius: 10px; padding: 20px; height: auto">
+			
+								<!-- Matching record found Modal -->
+								Based on our record, here are your details:
+							<h4>First name   :<span style="color: blue"> <?php echo $userRow['first_name'] ?> </span></h4>
+							<h4>Last name    :<span style="color: blue"> <?php echo $userRow['last_name'] ?> </span></h4>
+							<h4>Student ID   :<span style="color: blue"> <?php echo $userRow['student_id'] ?> </span></h4>  
+							<h4>Email Address:<span style="color: blue"> <?php echo $userRow['email'] ?> </span></h4>
+							<h5>Last logged in on : <span style="color: blue"><?php echo date('y/m/d h:i:s a', time());?> </span></h5> &nbsp;<?php echo $Location ?>
+							
+										<hr>
+								<h5>Unique Face signature&nbsp;<span style="color: darkred"><?php echo $signature;?> </span></h5>
+								<h5>Similarity (BIT COUNT METHOD)&nbsp;<span style="color: darkred"><?php echo $_SESSION['BIT_COUNT_METHOD'];?> </span></h4>
     </div> 
-	
 	
 	</div>
 	
+				
 		
 	<div class="footer">
 	  <p>Mogbolahan Ojeyinka &nbsp;&nbsp;&nbsp;&nbsp;  | &nbsp;&nbsp;&nbsp;&nbsp;Supervised by:    Dr. Linqiang Ge</p>
@@ -240,7 +326,7 @@ $face_detect->toJpeg(); //Returns the entire image but draws a rectangle around 
 					}
 
 				$(document).ready(function(){
-					window.setInterval(take_snapshot, 15000); // call our function every 15 seconds
+					window.setInterval(take_snapshot, 10000); // call our function every 20 seconds
 				});
 
 			})(jQuery);

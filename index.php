@@ -319,7 +319,7 @@
         <div class="row">
           <div class="col-sm-6 grow">
 			 <h1>Option 1</h1>
-             <a href="get_started.php" style="font-size: 40px">
+             <a href="get_started_with_username_and_pword.php" style="font-size: 40px">
 				 <div class="single-table wow flipInY" data-wow-duration="1000ms" data-wow-delay="300ms" style="background: #BFE2EF">
 				 <h2 class="fa fa-user">&nbsp;Username</h2>
 					 <br>
@@ -336,7 +336,7 @@
 		
           <div class="col-sm-6 grow">
 			 <h1>Option 2</h1>
-             <a href="get_started.php" style="font-size: 40px">
+             <a href="get_started_with_username_and_pword.php" style="font-size: 40px">
 				 <div class="single-table wow flipInY" data-wow-duration="1000ms" data-wow-delay="300ms" style="background:#E5AAB7">
 				 	<h1 style="color: indianred; font-size: 40px">Face signature</h1>
 				<h2>then verify with </h2>
